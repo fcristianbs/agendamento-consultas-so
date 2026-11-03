@@ -1,0 +1,32 @@
+# Ambientes Virtuais
+.venv/
+env/
+ENV/
+
+# Configurações de IDE e Agente
+.agent/
+.vscode/
+.idea/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Arquivos temporários e de lock do SO gerados em execução
+*.tmp
+*.lock
+
+# Logs de execução (preserva a pasta data/logs)
+data/logs/*
+!data/logs/.gitkeep
+
+# Relatórios gerados em execução
+data/relatorios/*.pdf
+data/relatorios/*.csv
+!data/relatorios/.gitkeep
+
+# Backups gerados em execução
+data/backups/*.zip
+!data/backups/.gitkeep
+

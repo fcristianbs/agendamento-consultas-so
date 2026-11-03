@@ -1,0 +1,50 @@
+[
+  {
+    "id": "con-001",
+    "paciente_id": "pac-001",
+    "paciente_nome": "João da Silva",
+    "medico_id": "med-001",
+    "medico_nome": "Dra. Ana Paula Silveira",
+    "data": "2026-11-03",
+    "horario": "09:00",
+    "status": "Agendada",
+    "observacoes": "Consulta de rotina cardiológica",
+    "criado_em": "2026-11-03 10:27:43"
+  },
+  {
+    "id": "3b02c142",
+    "paciente_id": "pac-001",
+    "paciente_nome": "João da Silva 0",
+    "medico_id": "med-001",
+    "medico_nome": "Dra. Ana Paula Silveira",
+    "data": "2029-01-01",
+    "horario": "14:00",
+    "status": "Agendada",
+    "observacoes": "Teste de concorrência",
+    "criado_em": "2026-11-03 10:35:37"
+  },
+  {
+    "id": "271c9e39",
+    "paciente_id": "pac-002",
+    "paciente_nome": "Maria Santos (Thread #1)",
+    "medico_id": "med-001",
+    "medico_nome": "Dra. Ana Paula Silveira",
+    "data": "2026-12-01",
+    "horario": "10:00",
+    "status": "Agendada",
+    "observacoes": "Teste de estresse concorrente disparado pela Thread 1",
+    "criado_em": "2026-11-03 10:43:02"
+  },
+  {
+    "id": "50aab4ca",
+    "paciente_id": "pac-001",
+    "paciente_nome": "João da Silva 0",
+    "medico_id": "med-001",
+    "medico_nome": "Dra. Ana Paula Silveira",
+    "data": "2029-01-01",
+    "horario": "15:00",
+    "status": "Agendada",
+    "observacoes": "Teste de concorrência",
+    "criado_em": "2026-11-03 11:00:17"
+  }
+]
