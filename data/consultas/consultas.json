@@ -5,9 +5,9 @@
     "paciente_nome": "João da Silva",
     "medico_id": "med-001",
     "medico_nome": "Dra. Ana Paula Silveira",
-    "data": "2026-11-03",
-    "horario": "09:00",
-    "status": "Agendada",
+    "data": "2026-11-12",
+    "horario": "08:00",
+    "status": "Concluída",
     "observacoes": "Consulta de rotina cardiológica",
     "criado_em": "2026-11-03 10:27:43"
   },
@@ -24,19 +24,19 @@
     "criado_em": "2026-11-03 10:35:37"
   },
   {
-    "id": "271c9e39",
-    "paciente_id": "pac-002",
-    "paciente_nome": "Maria Santos (Thread #1)",
+    "id": "86326f5b",
+    "paciente_id": "pac-001",
+    "paciente_nome": "João da Silva",
     "medico_id": "med-001",
     "medico_nome": "Dra. Ana Paula Silveira",
-    "data": "2026-12-01",
-    "horario": "10:00",
+    "data": "2026-11-11",
+    "horario": "08:00",
     "status": "Agendada",
-    "observacoes": "Teste de estresse concorrente disparado pela Thread 1",
-    "criado_em": "2026-11-03 10:43:02"
+    "observacoes": "febre",
+    "criado_em": "2026-11-11 19:42:55"
   },
   {
-    "id": "50aab4ca",
+    "id": "43f4b76f",
     "paciente_id": "pac-001",
     "paciente_nome": "João da Silva 0",
     "medico_id": "med-001",
@@ -45,6 +45,30 @@
     "horario": "15:00",
     "status": "Agendada",
     "observacoes": "Teste de concorrência",
-    "criado_em": "2026-11-03 11:00:17"
+    "criado_em": "2026-11-11 19:56:28"
+  },
+  {
+    "id": "808e8d43",
+    "paciente_id": "pac-002",
+    "paciente_nome": "Maria Santos (Thread #1)",
+    "medico_id": "med-001",
+    "medico_nome": "Dra. Ana Paula Silveira",
+    "data": "2026-12-01",
+    "horario": "10:00",
+    "status": "Agendada",
+    "observacoes": "Disparado pelo teste de concorrência de SO",
+    "criado_em": "2026-11-11 20:07:10"
+  },
+  {
+    "id": "2a5643d4",
+    "paciente_id": "pac-001",
+    "paciente_nome": "João da Silva (Proc #1 PID:21252)",
+    "medico_id": "med-001",
+    "medico_nome": "Dra. Ana Paula Silveira",
+    "data": "2026-12-02",
+    "horario": "11:00",
+    "status": "Agendada",
+    "observacoes": "Disparado pelo teste multiprocesso de SO",
+    "criado_em": "2026-11-11 20:21:05"
   }
 ]

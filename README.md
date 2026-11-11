@@ -1,65 +1,76 @@
 # Sistema de Agendamento de Consultas Médicas - CRUD
 ## Projeto Prático de Sistemas Operacionais
 
-Sistema de agendamento de consultas médicas desenvolvido para demonstrar na prática os conceitos fundamentais de **Sistemas Operacionais**.
+Sistema de agendamento de consultas médicas desenvolvido para demonstrar na prática os conceitos fundamentais de **Sistemas Operacionais** em Windows, Linux e macOS.
 
 ---
 
-## 📂 Estrutura Simplificada (1 Arquivo por Módulo)
-
-O projeto foi estruturado com exatamente **1 arquivo por módulo**, facilitando a leitura, manutenção e apresentação:
+## 📂 Estrutura do Projeto (`1 Arquivo por Módulo`)
 
 ```text
-Agendamento TRAB S.O/
+agendamento-consultas-so/
 ├── src/
 │   ├── config/
-│   │   └── os_adapter.py    # 🔹 SO: Chamadas de Sistema, detecção de SO, Cache LRU (RAM) e psutil
+│   │   └── os_adapter.py    # 🔹 SO: Detecção de SO, paths por SO/local, permissões, sanitização, Cache LRU, MemoryMonitor (psutil + tracemalloc) e SO-CleanupDaemon
 │   ├── storage/
-│   │   └── storage.py       # 🔹 SO: Sistema de Arquivos, I/O atômico (fsync), backups e logs (PID/TID)
+│   │   └── storage.py       # 🔹 SO: Escrita atômica (tmp + fsync + os.replace), I/O async, recuperação de JSON corrompido, AutoBackupManager e logging com fuso/PID/TID
 │   ├── concurrent/
-│   │   └── concurrency.py   # 🔹 SO: Concorrência, ThreadPool, Mutex e Travas de Kernel (msvcrt/fcntl)
+│   │   └── concurrency.py   # 🔹 SO: ConcurrencyLockManager (Mutex WeakValueDictionary + msvcrt/fcntl), WorkerPool com job_id e run_multiprocess_tasks (spawn)
 │   ├── reports/
-│   │   └── reports.py       # 🔹 SO: Operações de I/O, geração de PDF (ReportLab) e CSV
+│   │   └── reports.py       # 🔹 SO: Geração atômica de PDF (ReportLab) e CSV com encoding/EOL nativos do SO
 │   ├── core/
-│   │   └── scheduler.py     # Lógica de negócio, modelos de dados e verificação de conflitos
+│   │   └── scheduler.py     # Modelos Pydantic, validações, regras de negócio, worker multiprocesso e SchedulerService
 │   └── web/
-│       ├── app.py           # Servidor web FastAPI e endpoints RESTful
+│       ├── app.py           # Servidor FastAPI (lifespan, exception handler global, endpoints RESTful)
 │       └── templates/
-│           └── index.html   # Interface responsiva com painel de telemetria do SO
-├── data/
-│   ├── consultas/           # Arquivos JSON de dados
+│           └── index.html   # Interface web completa com CRUD, horários, polling de jobs e painel do SO
+├── data/                    # Dados locais padrão (--local)
+│   ├── consultas/           # médicos.json, pacientes.json, consultas.json
 │   ├── relatorios/          # Relatórios PDF/CSV gerados
-│   ├── backups/             # Snapshots periódicos compactados (.zip)
+│   ├── backups/             # Snapshots compactados (.zip)
 │   └── logs/                # Arquivo sistema.log
 ├── docs/
-│   ├── relatorio_tecnico.pdf # Relatório técnico formal para entrega
-│   └── manual_instalacao.md  # Manual de instalação e roteiro de apresentação
+│   ├── manual_instalacao.md # Manual de instalação, variáveis e roteiro de apresentação
+│   ├── relatorio_tecnico.md # Relatório técnico completo
+│   ├── gerar_pdf.py         # Gerador do PDF técnico a partir do Markdown
+│   └── relatorio_tecnico.pdf
 ├── tests/
-│   └── test_concurrency.py  # Testes automatizados de SO e corrida concorrente
-├── requirements.txt         # Dependências do projeto
-├── run.py                   # Script de inicialização
+│   └── test_concurrency.py  # 16 testes automatizados (isolados via tempfile)
+├── requirements.txt
+├── run.py                   # Ponto de entrada (--local ou --os-paths)
 └── README.md
 ```
 
 ---
 
-## 🎯 Mapa Rápido para a Apresentação
+## ⚙️ Variáveis de Ambiente e Modos de Diretório
 
-Caso o professor pergunte onde está cada conceito de SO:
-- **Concorrência e Locks:** `src/concurrent/concurrency.py`
-- **Sistema de Arquivos e Escrita Segura:** `src/storage/storage.py`
-- **Chamadas de Sistema e Memória RAM:** `src/config/os_adapter.py`
-- **Geração de Relatórios (I/O):** `src/reports/reports.py`
-- **Lógica e Conflitos de Agenda:** `src/core/scheduler.py`
-- **Interface e Dashboard:** `src/web/app.py`
+| Variável / Flag | Valores | Comportamento |
+| :--- | :--- | :--- |
+| `--local` / padrão | `AGENDAMENTO_DATA_DIR=./data` | Armazena dados e relatórios em `./data/` (ideal para demonstração). |
+| `--os-paths` | `AGENDAMENTO_MODE=os` | Usa pastas nativas do SO: Windows (`%APPDATA%\AgendamentoSO`, `%USERPROFILE%\Documents\AgendamentoSO\relatorios`), Linux (`$XDG_DATA_HOME/agendamento-so`, `$XDG_DOCUMENTS_DIR/AgendamentoSO/relatorios`), macOS (`~/Library/Application Support/AgendamentoSO`, `~/Documents/AgendamentoSO/relatorios`). |
+| `LOG_LEVEL` | `DEBUG`, `INFO`, `ERROR` (padrão `DEBUG`) | Configura o nível gravado em `sistema.log` (o console permanece em `INFO`). |
+
+---
+
+## 🌐 Endpoints da API
+
+- **Médicos e Horários:** `GET/POST /api/medicos`, `GET/PUT/DELETE /api/medicos/{id}`, `GET/POST/PUT /api/medicos/{id}/horarios`, `DELETE /api/medicos/{id}/horarios/{hh:mm}`
+- **Pacientes:** `GET/POST /api/pacientes`, `GET/PUT/DELETE /api/pacientes/{id}`
+- **Consultas:** `GET/POST /api/consultas`, `GET/PUT/DELETE /api/consultas/{id}`, `PUT /api/consultas/{id}/cancelar`, `PUT /api/consultas/{id}/concluir`
+- **Relatórios, Backups e Jobs (`WorkerPool`):** `POST /api/reports/pdf`, `POST /api/reports/csv`, `POST /api/backups/create`, `GET /api/jobs/{job_id}`, `GET /api/reports/list`, `GET /api/reports/download/{filename}`, `GET /api/backups/list`
+- **Telemetria, Memória e Testes de SO:** `GET /api/os/telemetry`, `GET /api/os/memory/snapshot`, `POST /api/os/memory/compare`, `POST /api/os/gc`, `GET /api/os/logs?level=...`, `POST /api/test/concurrency-simulation`, `POST /api/test/multiprocess-simulation`
 
 ---
 
 ## 🚀 Como Executar
 
 ```bash
-# Iniciar o servidor
+# Modo local padrão (./data)
 python run.py
+
+# Modo caminhos nativos do SO
+python run.py --os-paths
 
 # Ou no Windows:
 .\iniciar.bat
@@ -69,9 +80,11 @@ Acesse no navegador: **[http://127.0.0.1:8000](http://127.0.0.1:8000)**
 
 ---
 
-## 🧪 Como Rodar os Testes de SO
+## 🧪 Como Rodar os Testes
 
 ```bash
-python tests/test_concurrency.py
+python tests/test_concurrency.py -v
+# ou
+python -m unittest discover tests -v
 ```
-*(Todos os 6 testes passam em menos de 0.05s, validando locks, I/O atômico, cache e memória).*
+*(Os 16 testes rodam em diretório temporário isolado sem alterar `./data/`).*

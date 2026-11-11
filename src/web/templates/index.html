@@ -26,10 +26,13 @@
     </div>
 
     <!-- Pílula de Status do SO em tempo real -->
-    <div class="flex items-center space-x-4 text-xs mt-2 sm:mt-0">
+    <div class="flex flex-wrap items-center gap-2 text-xs mt-2 sm:mt-0">
       <div class="bg-slate-700/80 px-3 py-1.5 rounded-full border border-slate-600 flex items-center space-x-2">
         <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
         <span class="text-slate-300 font-semibold" id="header-so-name">SO: {{ so.os_name }}</span>
+      </div>
+      <div class="bg-slate-700/80 px-3 py-1.5 rounded-full border border-slate-600 text-slate-300">
+        <i class="fa-solid fa-folder-tree text-amber-400 mr-1"></i> Modo: <span id="header-path-mode" class="font-mono text-amber-300 font-bold">{{ so.path_mode }}</span>
       </div>
       <div class="bg-slate-700/80 px-3 py-1.5 rounded-full border border-slate-600 text-slate-300">
         <i class="fa-solid fa-microchip text-blue-400 mr-1"></i> PID: <span id="header-pid" class="font-mono text-emerald-400 font-bold">-</span>
@@ -63,16 +66,15 @@
     <!-- ABA 1: CONSULTAS & AGENDAMENTO -->
     <!-- ========================================== -->
     <section id="pane-consultas" class="tab-pane space-y-6">
-      
+
       <!-- Formulário de Agendamento -->
       <div class="bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-lg">
         <h2 class="text-base font-bold text-white mb-4 flex items-center space-x-2">
           <i class="fa-solid fa-calendar-plus text-blue-400"></i>
           <span>Novo Agendamento de Consulta</span>
         </h2>
-        
+
         <form id="form-agendamento" onsubmit="handleAgendar(event)" class="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <!-- Selecionar Paciente -->
           <div>
             <label class="block text-xs font-medium text-slate-400 mb-1">Paciente</label>
             <select id="select-paciente" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-blue-500">
@@ -80,7 +82,6 @@
             </select>
           </div>
 
-          <!-- Selecionar Médico -->
           <div>
             <label class="block text-xs font-medium text-slate-400 mb-1">Médico / Especialidade</label>
             <select id="select-medico" required onchange="carregarHorariosDisponiveis()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-blue-500">
@@ -88,13 +89,11 @@
             </select>
           </div>
 
-          <!-- Selecionar Data -->
           <div>
             <label class="block text-xs font-medium text-slate-400 mb-1">Data da Consulta</label>
             <input type="date" id="input-data" required onchange="carregarHorariosDisponiveis()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-blue-500">
           </div>
 
-          <!-- Selecionar Horário Livre -->
           <div>
             <label class="block text-xs font-medium text-slate-400 mb-1">Horário Disponível</label>
             <select id="select-horario" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-blue-500">
@@ -102,7 +101,6 @@
             </select>
           </div>
 
-          <!-- Observações e Botão -->
           <div class="md:col-span-3">
             <label class="block text-xs font-medium text-slate-400 mb-1">Observações Clínicas (Opcional)</label>
             <input type="text" id="input-obs" placeholder="Ex: Paciente com sintomas leves..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-blue-500">
@@ -116,7 +114,6 @@
           </div>
         </form>
 
-        <!-- Mensagem de Alerta -->
         <div id="msg-agendamento" class="mt-4 hidden p-3 rounded-lg text-sm"></div>
       </div>
 
@@ -125,7 +122,7 @@
         <div class="flex flex-wrap items-center justify-between mb-4 gap-2">
           <h2 class="text-base font-bold text-white flex items-center space-x-2">
             <i class="fa-solid fa-list-check text-blue-400"></i>
-            <span>Consultas Agendadas</span>
+            <span>Consultas Cadastradas</span>
           </h2>
           <button onclick="carregarConsultas()" class="text-xs bg-slate-700 hover:bg-slate-600 text-slate-300 py-1.5 px-3 rounded-lg border border-slate-600 flex items-center space-x-1.5">
             <i class="fa-solid fa-arrows-rotate"></i> <span>Atualizar Tabela</span>
@@ -156,8 +153,10 @@
     <!-- ABA 2: CADASTROS (MÉDICOS & PACIENTES) -->
     <!-- ========================================== -->
     <section id="pane-cadastros" class="tab-pane hidden space-y-6">
+      <div id="msg-cadastros" class="hidden p-3 rounded-lg text-sm"></div>
+
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        
+
         <!-- Cadastro de Médicos -->
         <div class="bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-lg space-y-4">
           <h2 class="text-base font-bold text-white flex items-center space-x-2">
@@ -183,7 +182,7 @@
           </form>
 
           <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mt-4">Médicos Cadastrados</h3>
-          <div id="lista-medicos" class="space-y-2 max-h-56 overflow-y-auto"></div>
+          <div id="lista-medicos" class="space-y-2 max-h-72 overflow-y-auto"></div>
         </div>
 
         <!-- Cadastro de Pacientes -->
@@ -207,11 +206,15 @@
                 <input type="text" id="pac-telefone" required placeholder="(00) 00000-0000" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200">
               </div>
             </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-400 mb-1">E-mail (Opcional)</label>
+              <input type="email" id="pac-email" placeholder="paciente@email.com" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200">
+            </div>
             <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2 px-4 rounded-lg shadow text-sm">Salvar Paciente</button>
           </form>
 
           <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mt-4">Pacientes Cadastrados</h3>
-          <div id="lista-pacientes" class="space-y-2 max-h-56 overflow-y-auto"></div>
+          <div id="lista-pacientes" class="space-y-2 max-h-72 overflow-y-auto"></div>
         </div>
 
       </div>
@@ -221,16 +224,29 @@
     <!-- ABA 3: RELATÓRIOS & BACKUPS (I/O DE ARQUIVOS) -->
     <!-- ========================================== -->
     <section id="pane-relatorios" class="tab-pane hidden space-y-6">
+
+      <!-- Status de Job Assíncrono do WorkerPool -->
+      <div id="job-status-banner" class="hidden bg-slate-800 border border-blue-600/60 rounded-xl p-4 shadow-lg flex flex-wrap items-center justify-between gap-3">
+        <div class="text-xs space-y-1">
+          <div class="font-bold text-white flex items-center space-x-2">
+            <i id="job-spinner" class="fa-solid fa-circle-notch fa-spin text-blue-400"></i>
+            <span id="job-title">Job no WorkerPool</span>
+          </div>
+          <div id="job-meta" class="text-slate-300 font-mono text-[11px]"></div>
+        </div>
+        <div id="job-action"></div>
+      </div>
+
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
         <!-- Geração de Relatórios PDF e CSV -->
         <div class="bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-lg space-y-4">
           <h2 class="text-base font-bold text-white flex items-center space-x-2">
             <i class="fa-solid fa-file-export text-amber-400"></i>
-            <span>Exportação de Relatórios (I/O de Disco)</span>
+            <span>Exportação de Relatórios (WorkerPool I/O)</span>
           </h2>
           <p class="text-xs text-slate-400 leading-relaxed">
-            A geração de relatórios roda de forma assíncrona desacoplada em threads secundárias do sistema operacional, gravando diretamente no diretório <code class="text-amber-300">data/relatorios/</code>.
+            Os relatórios são enfileirados no <code class="text-amber-300">WorkerPool</code> (retornando <code class="text-amber-300">job_id</code> imediato) e gravados de forma atômica no diretório de relatórios configurado para o SO.
           </p>
           <div class="flex space-x-3">
             <button onclick="gerarRelatorio('pdf')" class="flex-1 bg-red-600 hover:bg-red-500 text-white py-2 px-3 rounded-lg font-semibold text-sm flex items-center justify-center space-x-2 shadow">
@@ -254,7 +270,7 @@
             <span>Backups Automáticos do Sistema</span>
           </h2>
           <p class="text-xs text-slate-400 leading-relaxed">
-            Uma thread daemon de segundo plano (<code class="text-purple-300">SO-BackupDaemon</code>) gera snapshots compactados periodicamente em <code class="text-purple-300">data/backups/</code> e rotaciona arquivos antigos.
+            A thread daemon (<code class="text-purple-300">SO-BackupDaemon</code>) gera snapshots periodicamente e backups manuais rodam no <code class="text-purple-300">WorkerPool</code>, mantendo rotação dos últimos 5 arquivos .ZIP.
           </p>
           <button onclick="gerarBackupManual()" class="w-full bg-purple-600 hover:bg-purple-500 text-white py-2 px-4 rounded-lg font-semibold text-sm flex items-center justify-center space-x-2 shadow">
             <i class="fa-solid fa-floppy-disk"></i>
@@ -275,27 +291,29 @@
 
       <!-- Métricas em Cards -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        
+
         <!-- Card 1: Sistema Operacional Host -->
         <div class="bg-slate-800 border border-slate-700 p-4 rounded-xl shadow">
           <div class="flex items-center justify-between text-slate-400 text-xs mb-1 font-semibold uppercase">
-            <span>SO & Kernel</span>
-            <i class="fa-brands fa-linux text-base text-blue-400"></i>
+            <span>SO & Filesystem</span>
+            <i class="fa-solid fa-microchip text-base text-blue-400"></i>
           </div>
           <div class="text-lg font-bold text-white" id="card-os-name">{{ so.os_name }}</div>
-          <div class="text-xs text-slate-400 mt-1">Arch: <span class="font-mono text-slate-300" id="card-arch">{{ so.architecture }}</span></div>
-          <div class="text-xs text-slate-400">Sep: <span class="font-mono text-amber-400">{{ so.path_separator }}</span> | Núcleos CPU: <span class="font-mono text-slate-300" id="card-cpu">{{ so.cpu_cores }}</span></div>
+          <div class="text-xs text-slate-400 mt-1">Arch: <span class="font-mono text-slate-300" id="card-arch">{{ so.architecture }}</span> | CPU: <span class="font-mono text-slate-300" id="card-cpu">{{ so.cpu_cores }}</span></div>
+          <div class="text-xs text-slate-400">FS Case-Sensitive: <span class="font-mono text-amber-300" id="card-case-sensitive">-</span></div>
+          <div class="text-xs text-slate-400">CSV: <span class="font-mono text-slate-300" id="card-csv-enc">-</span> | MAX_PATH: <span class="font-mono text-slate-300" id="card-max-path">-</span></div>
         </div>
 
         <!-- Card 2: Processos e Threads -->
         <div class="bg-slate-800 border border-slate-700 p-4 rounded-xl shadow">
           <div class="flex items-center justify-between text-slate-400 text-xs mb-1 font-semibold uppercase">
-            <span>Processo & Threads</span>
+            <span>Processo, Threads & Locks</span>
             <i class="fa-solid fa-diagram-project text-base text-emerald-400"></i>
           </div>
           <div class="text-lg font-bold text-emerald-400 font-mono">PID: <span id="card-pid">-</span></div>
           <div class="text-xs text-slate-400 mt-1">Threads Ativas: <span class="font-mono font-bold text-slate-200" id="card-threads">-</span></div>
-          <div class="text-xs text-slate-400">Workers Pool: <span class="font-mono text-emerald-300" id="card-workers">-</span></div>
+          <div class="text-xs text-slate-400">Workers Ativos: <span class="font-mono text-emerald-300" id="card-workers">-</span></div>
+          <div class="text-xs text-slate-400">Mutexes em RAM (WeakRef): <span class="font-mono text-amber-300" id="card-mem-locks">-</span></div>
         </div>
 
         <!-- Card 3: Memória RAM do Processo -->
@@ -306,7 +324,7 @@
           </div>
           <div class="text-lg font-bold text-purple-300 font-mono"><span id="card-rss">-</span> MB <span class="text-xs text-slate-400 font-sans font-normal">(RSS Físico)</span></div>
           <div class="text-xs text-slate-400 mt-1">Virtual (VMS): <span class="font-mono text-slate-300" id="card-vms">- MB</span></div>
-          <div class="text-xs text-slate-400">Uso Total Sistema: <span class="font-mono text-purple-400" id="card-ram-percent">-%</span></div>
+          <div class="text-xs text-slate-400">Uso Sistema: <span class="font-mono text-purple-400" id="card-ram-percent">-%</span> | Tracemalloc: <span class="font-mono text-slate-300" id="card-traced">-</span></div>
         </div>
 
         <!-- Card 4: Cache LRU em Memória -->
@@ -322,70 +340,151 @@
 
       </div>
 
-      <!-- Ações de Gerenciamento de SO e Teste de Concorrência -->
+      <!-- Painel de Caminhos do SO (Local vs OS Paths) e Permissões -->
+      <div class="bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-lg space-y-2 text-xs">
+        <div class="flex items-center justify-between">
+          <h2 class="text-sm font-bold text-white flex items-center space-x-2">
+            <i class="fa-solid fa-folder-open text-amber-400"></i>
+            <span>Resolução de Diretórios & Segurança por SO</span>
+          </h2>
+          <span id="badge-path-mode" class="px-2 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-800 font-mono">Modo: -</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 font-mono text-[11px] pt-1">
+          <div class="bg-slate-900 p-3 rounded border border-slate-700 space-y-1">
+            <div class="text-slate-400 font-sans font-semibold">Modo Local (--local / ./data):</div>
+            <div class="text-slate-300 break-all" id="info-path-local">-</div>
+          </div>
+          <div class="bg-slate-900 p-3 rounded border border-slate-700 space-y-1">
+            <div class="text-slate-400 font-sans font-semibold">Modo SO Nativo (--os-paths / AGENDAMENTO_MODE=os):</div>
+            <div class="text-slate-300 break-all" id="info-path-os">-</div>
+          </div>
+        </div>
+        <div class="text-[11px] text-slate-400 font-mono pt-1" id="info-permissoes">Permissões / Atributos (os.stat): -</div>
+      </div>
+
+      <!-- Testes de Concorrência (Threads e Multiprocessamento) -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-        <!-- Teste de Estresse de Concorrência -->
+        <!-- Teste de Estresse de Concorrência (Threads) -->
         <div class="bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-lg space-y-4">
           <div class="flex items-center justify-between">
             <h2 class="text-base font-bold text-white flex items-center space-x-2">
               <i class="fa-solid fa-shield-halved text-rose-400"></i>
-              <span>Demonstração de Concorrência & Locks</span>
+              <span>Concorrência entre Threads (Mutex + File Lock)</span>
             </h2>
-            <span class="text-xs bg-rose-950 text-rose-300 px-2 py-0.5 rounded border border-rose-800">Race Condition Test</span>
+            <span class="text-xs bg-rose-950 text-rose-300 px-2 py-0.5 rounded border border-rose-800">10 Threads</span>
           </div>
           <p class="text-xs text-slate-400 leading-relaxed">
-            Dispara <strong>10 threads concorrentes</strong> simultâneas tentando marcar exatamente a mesma vaga no mesmo segundo. O <strong>Lock de Exclusão Mútua de SO</strong> garante que somente 1 thread obterá o recurso e as outras serão rejeitadas sem corrupção de dados.
+            Dispara <strong>10 threads concorrentes</strong> simultâneas tentando marcar a mesma vaga no mesmo instante. Apenas 1 thread obtém a vaga.
           </p>
           <button onclick="executarTesteConcorrencia()" id="btn-teste-concorrencia" class="w-full bg-rose-600 hover:bg-rose-500 text-white py-2 px-4 rounded-lg font-semibold text-sm flex items-center justify-center space-x-2 shadow">
             <i class="fa-solid fa-play"></i>
             <span>Disparar 10 Threads Concorrentes</span>
           </button>
 
-          <!-- Resultado do Teste -->
           <div id="resultado-concorrencia" class="hidden p-3 bg-slate-900 border border-slate-700 rounded-lg text-xs space-y-2">
             <div class="font-bold text-slate-200 flex justify-between">
-              <span>Resultado do Kernel Lock:</span>
+              <span>Resultado do Lock:</span>
               <span id="res-status" class="text-emerald-400 font-mono"></span>
             </div>
             <div id="res-detalhes" class="text-slate-400 font-mono text-[11px] max-h-36 overflow-y-auto space-y-1"></div>
           </div>
         </div>
 
-        <!-- Gerenciamento Explícito de Memória e GC -->
+        <!-- Teste de Estresse Multiprocesso -->
+        <div class="bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-lg space-y-4">
+          <div class="flex items-center justify-between">
+            <h2 class="text-base font-bold text-white flex items-center space-x-2">
+              <i class="fa-solid fa-cubes text-amber-400"></i>
+              <span>Concorrência entre Processos (Kernel File Lock)</span>
+            </h2>
+            <span class="text-xs bg-amber-950 text-amber-300 px-2 py-0.5 rounded border border-amber-800">5 Processos (PIDs)</span>
+          </div>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            Dispara <strong>5 processos independentes</strong> via <code class="text-amber-300">multiprocessing (spawn)</code> sem memória compartilhada. A trava de kernel (<code class="text-amber-300">msvcrt/flock</code>) garante apenas 1 sucesso.
+          </p>
+          <button onclick="executarTesteMultiprocesso()" id="btn-teste-multiprocesso" class="w-full bg-amber-600 hover:bg-amber-500 text-white py-2 px-4 rounded-lg font-semibold text-sm flex items-center justify-center space-x-2 shadow">
+            <i class="fa-solid fa-microchip"></i>
+            <span>Disparar 5 Processos Independentes</span>
+          </button>
+
+          <div id="resultado-multiprocesso" class="hidden p-3 bg-slate-900 border border-slate-700 rounded-lg text-xs space-y-2">
+            <div class="font-bold text-slate-200 flex justify-between">
+              <span>Resultado entre Processos:</span>
+              <span id="res-mp-status" class="text-emerald-400 font-mono"></span>
+            </div>
+            <div id="res-mp-detalhes" class="text-slate-400 font-mono text-[11px] max-h-36 overflow-y-auto space-y-1"></div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Gerenciamento Explícito de Memória, GC e Tracemalloc -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+        <!-- Garbage Collector & Limpeza -->
         <div class="bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-lg space-y-4">
           <div class="flex items-center justify-between">
             <h2 class="text-base font-bold text-white flex items-center space-x-2">
               <i class="fa-solid fa-broom text-blue-400"></i>
-              <span>Gerência de Memória & Limpeza</span>
+              <span>Coleta de Lixo & Purga de Temporários</span>
             </h2>
-            <span class="text-xs bg-blue-950 text-blue-300 px-2 py-0.5 rounded border border-blue-800">Garbage Collector</span>
+            <span class="text-xs bg-blue-950 text-blue-300 px-2 py-0.5 rounded border border-blue-800">GC + SO-CleanupDaemon</span>
           </div>
           <p class="text-xs text-slate-400 leading-relaxed">
-            Força a coleta de objetos inalcançáveis da memória (<code class="text-blue-300">gc.collect()</code>), purga do cache LRU de itens expirados e varre o sistema de arquivos para deletar arquivos temporários órfãos (<code class="text-blue-300">.tmp</code>).
+            Força <code class="text-blue-300">gc.collect()</code>, purga entradas expiradas do cache LRU e remove arquivos órfãos (<code class="text-blue-300">.tmp</code> e <code class="text-blue-300">.lock</code>) com mais de 60 s.
           </p>
           <button onclick="forcarGarbageCollection()" class="w-full bg-blue-600 hover:bg-blue-500 text-white py-2 px-4 rounded-lg font-semibold text-sm flex items-center justify-center space-x-2 shadow">
             <i class="fa-solid fa-recycle"></i>
-            <span>Executar Coleta de Lixo & Purga de Memória</span>
+            <span>Executar Coleta de Lixo & Purga</span>
           </button>
 
-          <!-- Feedback GC -->
           <div id="feedback-gc" class="hidden p-3 bg-slate-900 border border-slate-700 rounded-lg text-xs space-y-1">
             <div class="text-emerald-400 font-semibold" id="gc-mensagem"></div>
             <div class="text-slate-400" id="gc-detalhes"></div>
           </div>
         </div>
 
+        <!-- Rastreamento de Alocações (tracemalloc) -->
+        <div class="bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-lg space-y-4">
+          <div class="flex items-center justify-between">
+            <h2 class="text-base font-bold text-white flex items-center space-x-2">
+              <i class="fa-solid fa-magnifying-glass-chart text-purple-400"></i>
+              <span>Rastreamento de Memória (tracemalloc)</span>
+            </h2>
+            <span class="text-xs bg-purple-950 text-purple-300 px-2 py-0.5 rounded border border-purple-800">Leak Detector</span>
+          </div>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            Inspeciona as top 10 alocações no heap Python e compara snapshots consecutivos para comprovar ausência de vazamentos.
+          </p>
+          <div class="flex space-x-2">
+            <button onclick="capturarSnapshotMemoria()" class="flex-1 bg-purple-600 hover:bg-purple-500 text-white py-2 px-3 rounded-lg font-semibold text-xs flex items-center justify-center space-x-1.5 shadow">
+              <i class="fa-solid fa-camera"></i> <span>Top 10 Alocações</span>
+            </button>
+            <button onclick="compararSnapshotsMemoria()" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white py-2 px-3 rounded-lg font-semibold text-xs flex items-center justify-center space-x-1.5 shadow">
+              <i class="fa-solid fa-code-compare"></i> <span>Comparar Snapshots</span>
+            </button>
+          </div>
+          <div id="resultado-tracemalloc" class="hidden p-3 bg-slate-900 border border-slate-700 rounded-lg text-[11px] font-mono text-slate-300 max-h-44 overflow-y-auto space-y-1"></div>
+        </div>
+
       </div>
 
       <!-- Console de Logs do SO em Tempo Real -->
       <div class="bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-lg space-y-3">
-        <div class="flex items-center justify-between">
+        <div class="flex flex-wrap items-center justify-between gap-2">
           <h2 class="text-base font-bold text-white flex items-center space-x-2">
             <i class="fa-solid fa-terminal text-emerald-400"></i>
-            <span>Log do Sistema Operacional (PID, Thread IDs e I/O de Disco)</span>
+            <span>Log do Sistema Operacional (Fuso, PID, TID e I/O)</span>
           </h2>
           <div class="flex items-center space-x-2">
+            <label for="filtro-log-nivel" class="text-xs text-slate-400">Nível:</label>
+            <select id="filtro-log-nivel" onchange="carregarLogsSO()" class="text-xs bg-slate-900 border border-slate-600 text-slate-200 rounded py-1 px-2">
+              <option value="">Todos</option>
+              <option value="INFO">INFO</option>
+              <option value="ERROR">ERROR</option>
+              <option value="DEBUG">DEBUG</option>
+            </select>
             <button onclick="carregarLogsSO()" class="text-xs bg-slate-700 hover:bg-slate-600 text-slate-300 py-1 px-2.5 rounded border border-slate-600 flex items-center space-x-1">
               <i class="fa-solid fa-arrows-rotate"></i> <span>Atualizar</span>
             </button>
@@ -401,13 +500,151 @@ Carregando logs do sistema...
 
   </main>
 
+  <!-- ========================================== -->
+  <!-- MODAIS DE EDIÇÃO E HORÁRIOS -->
+  <!-- ========================================== -->
+
+  <!-- Modal Editar Médico -->
+  <div id="modal-medico" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
+    <div class="bg-slate-800 border border-slate-700 rounded-xl p-5 w-full max-w-md space-y-4 shadow-2xl">
+      <div class="flex justify-between items-center">
+        <h3 class="font-bold text-white">Editar Médico</h3>
+        <button onclick="fecharModal('modal-medico')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form onsubmit="salvarEdicaoMedico(event)" class="space-y-3 text-sm">
+        <input type="hidden" id="edit-med-id">
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">Nome Completo</label>
+          <input type="text" id="edit-med-nome" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-200">
+        </div>
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">CRM</label>
+          <input type="text" id="edit-med-crm" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-200">
+        </div>
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">Especialidade</label>
+          <input type="text" id="edit-med-esp" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-200">
+        </div>
+        <div class="flex justify-end space-x-2 pt-2">
+          <button type="button" onclick="fecharModal('modal-medico')" class="px-4 py-1.5 rounded bg-slate-700 text-slate-200 text-xs">Cancelar</button>
+          <button type="submit" class="px-4 py-1.5 rounded bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs">Salvar Alterações</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Gerenciar Horários do Médico -->
+  <div id="modal-horarios" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
+    <div class="bg-slate-800 border border-slate-700 rounded-xl p-5 w-full max-w-lg space-y-4 shadow-2xl">
+      <div class="flex justify-between items-center">
+        <h3 class="font-bold text-white" id="modal-horarios-titulo">Horários do Médico</h3>
+        <button onclick="fecharModal('modal-horarios')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <input type="hidden" id="hor-med-id">
+      <div>
+        <div class="text-xs text-slate-400 mb-2">Horários configurados (ordenados):</div>
+        <div id="horarios-chips" class="flex flex-wrap gap-2"></div>
+      </div>
+      <form onsubmit="adicionarHorarioMedico(event)" class="flex space-x-2">
+        <input type="text" id="novo-horario-input" placeholder="HH:MM (ex: 17:00)" pattern="\d{2}:\d{2}" required class="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200">
+        <button type="submit" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg text-xs font-semibold">Adicionar</button>
+      </form>
+      <div class="border-t border-slate-700 pt-3 space-y-2">
+        <label class="block text-xs text-slate-400">Substituir lista completa (separados por vírgula):</label>
+        <div class="flex space-x-2">
+          <input type="text" id="substituir-horarios-input" placeholder="08:00, 09:00, 14:00" class="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-200 font-mono">
+          <button type="button" onclick="substituirHorariosMedico()" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-2 rounded-lg text-xs font-semibold">Substituir</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Editar Paciente -->
+  <div id="modal-paciente" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
+    <div class="bg-slate-800 border border-slate-700 rounded-xl p-5 w-full max-w-md space-y-4 shadow-2xl">
+      <div class="flex justify-between items-center">
+        <h3 class="font-bold text-white">Editar Paciente</h3>
+        <button onclick="fecharModal('modal-paciente')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form onsubmit="salvarEdicaoPaciente(event)" class="space-y-3 text-sm">
+        <input type="hidden" id="edit-pac-id">
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">Nome Completo</label>
+          <input type="text" id="edit-pac-nome" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-200">
+        </div>
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">CPF</label>
+          <input type="text" id="edit-pac-cpf" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-200">
+        </div>
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">Telefone</label>
+          <input type="text" id="edit-pac-telefone" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-200">
+        </div>
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">E-mail</label>
+          <input type="email" id="edit-pac-email" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-200">
+        </div>
+        <div class="flex justify-end space-x-2 pt-2">
+          <button type="button" onclick="fecharModal('modal-paciente')" class="px-4 py-1.5 rounded bg-slate-700 text-slate-200 text-xs">Cancelar</button>
+          <button type="submit" class="px-4 py-1.5 rounded bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs">Salvar Alterações</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Editar / Remarcar Consulta -->
+  <div id="modal-consulta" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
+    <div class="bg-slate-800 border border-slate-700 rounded-xl p-5 w-full max-w-md space-y-4 shadow-2xl">
+      <div class="flex justify-between items-center">
+        <h3 class="font-bold text-white">Editar / Remarcar Consulta</h3>
+        <button onclick="fecharModal('modal-consulta')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form onsubmit="salvarEdicaoConsulta(event)" class="space-y-3 text-sm">
+        <input type="hidden" id="edit-con-id">
+        <input type="hidden" id="edit-con-medico-id">
+        <div class="text-xs text-slate-400 bg-slate-900 p-2.5 rounded border border-slate-700" id="edit-con-resumo"></div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Data</label>
+            <input type="date" id="edit-con-data" required onchange="carregarHorariosEdicaoConsulta()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-200">
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Horário</label>
+            <select id="edit-con-horario" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-200"></select>
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">Observações</label>
+          <input type="text" id="edit-con-obs" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-200">
+        </div>
+        <div class="flex justify-end space-x-2 pt-2">
+          <button type="button" onclick="fecharModal('modal-consulta')" class="px-4 py-1.5 rounded bg-slate-700 text-slate-200 text-xs">Cancelar</button>
+          <button type="submit" class="px-4 py-1.5 rounded bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs">Salvar Consulta</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- Rodapé -->
   <footer class="bg-slate-800 border-t border-slate-700 py-3 px-6 text-center text-xs text-slate-400">
     Trabalho Prático de Sistemas Operacionais &bull; Concorrência &bull; Memória &bull; Sistema de Arquivos &bull; I/O &bull; Chamadas de Sistema
   </footer>
 
-  <!-- Script Lógico do Frontend -->
   <script>
+    function escapeHtml(text) {
+      if (text === null || text === undefined) return '';
+      return String(text)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function fecharModal(id) {
+      document.getElementById(id).classList.add('hidden');
+    }
+
     // Gerenciador de Abas
     function switchTab(tabId) {
       document.querySelectorAll('.tab-pane').forEach(el => el.classList.add('hidden'));
@@ -430,16 +667,15 @@ Carregando logs do sistema...
       } else if (tabId === 'relatorios') {
         carregarRelatoriosEBackups();
       } else if (tabId === 'cadastros') {
-        carregarListasCadastros();
+        carregarMedicosEPacientes().then(carregarListasCadastros);
       }
     }
 
-    // Inicialização
     let medicosCache = [];
     let pacientesCache = [];
+    let consultasCacheList = [];
 
     window.addEventListener('DOMContentLoaded', () => {
-      // Definir data mínima como hoje
       const hoje = new Date().toISOString().split('T')[0];
       const inputData = document.getElementById('input-data');
       if (inputData) {
@@ -450,44 +686,67 @@ Carregando logs do sistema...
       carregarMedicosEPacientes();
       carregarConsultas();
       atualizarTelemetria();
-      // Atualização periódica da telemetria a cada 4 segundos
       setInterval(atualizarTelemetria, 4000);
     });
 
-    // Atualização de Telemetria do SO
+    // Telemetria do SO
     async function atualizarTelemetria() {
       try {
         const res = await fetch('/api/os/telemetry');
         const data = await res.json();
 
-        // Header
         document.getElementById('header-pid').innerText = data.memory.pid;
         document.getElementById('header-ram').innerText = data.memory.process_rss_mb + ' MB';
+        document.getElementById('header-path-mode').innerText = data.so.path_mode;
 
-        // Cards
+        document.getElementById('card-case-sensitive').innerText = data.so.filesystem_case_sensitive ? 'Sim' : 'Não';
+        document.getElementById('card-csv-enc').innerText = (data.so.csv_encoding || '').toUpperCase();
+        document.getElementById('card-max-path').innerText = data.so.max_path_length;
+
         document.getElementById('card-pid').innerText = data.memory.pid;
         document.getElementById('card-threads').innerText = data.memory.threads_count;
         document.getElementById('card-workers').innerText = data.concurrency.active_tasks_count + ' ativas';
+        document.getElementById('card-mem-locks').innerText = data.concurrency.memory_locks_count ?? 0;
+
         document.getElementById('card-rss').innerText = data.memory.process_rss_mb;
         document.getElementById('card-vms').innerText = data.memory.process_vms_mb + ' MB';
         document.getElementById('card-ram-percent').innerText = data.memory.system_ram_percent + '%';
+        document.getElementById('card-traced').innerText = data.memory.tracemalloc_active
+          ? `${data.memory.traced_current_kb} KB`
+          : 'Inativo';
 
         document.getElementById('card-cache-size').innerText = data.memory.cache_stats.current_size;
         document.getElementById('card-hit-ratio').innerText = data.memory.cache_stats.hit_ratio_percent + '%';
         document.getElementById('card-hits').innerText = data.memory.cache_stats.hits;
         document.getElementById('card-misses').innerText = data.memory.cache_stats.misses;
+
+        if (data.so.paths) {
+          document.getElementById('badge-path-mode').innerText = `Ativo: ${data.so.paths.active_mode.toUpperCase()}`;
+          document.getElementById('info-path-local').innerText =
+            `Dados: ${data.so.paths.local_mode.data_dir}\nRelatórios: ${data.so.paths.local_mode.relatorios_dir}`;
+          document.getElementById('info-path-os').innerText =
+            `Dados: ${data.so.paths.os_mode.data_dir}\nRelatórios: ${data.so.paths.os_mode.relatorios_dir}`;
+        }
+        if (data.so.data_dir_security) {
+          const sec = data.so.data_dir_security;
+          const winAttrs = sec.windows_attributes ? ` | WinAttrs: [${sec.windows_attributes.join(', ')}] (st_file_attributes=${sec.st_file_attributes})` : '';
+          document.getElementById('info-permissoes').innerText =
+            `os.stat('${sec.path}') -> mode=${sec.mode_oct}${winAttrs}`;
+        }
       } catch (err) {
         console.error('Erro na telemetria:', err);
       }
     }
 
-    // Carregar Logs do SO
+    // Logs do SO com filtro
     async function carregarLogsSO() {
       try {
-        const res = await fetch('/api/os/logs?lines=60');
+        const level = document.getElementById('filtro-log-nivel')?.value || '';
+        const url = level ? `/api/os/logs?lines=80&level=${encodeURIComponent(level)}` : '/api/os/logs?lines=80';
+        const res = await fetch(url);
         const data = await res.json();
         const terminal = document.getElementById('terminal-logs');
-        terminal.innerText = data.logs.join('');
+        terminal.innerText = data.logs.length ? data.logs.join('') : '(Sem registros para o filtro selecionado)';
         terminal.scrollTop = terminal.scrollHeight;
       } catch (err) {
         console.error('Erro ao ler logs:', err);
@@ -504,23 +763,23 @@ Carregando logs do sistema...
         medicosCache = await resMed.json();
         pacientesCache = await resPac.json();
 
-        // Preenche selects
         const selectMed = document.getElementById('select-medico');
         const selectPac = document.getElementById('select-paciente');
 
-        selectMed.innerHTML = '<option value="">-- Escolha um Médico --</option>' + 
-          medicosCache.map(m => `<option value="${m.id}">${m.nome} (${m.especialidade})</option>`).join('');
+        selectMed.innerHTML = '<option value="">-- Escolha um Médico --</option>' +
+          medicosCache.map(m => `<option value="${escapeHtml(m.id)}">${escapeHtml(m.nome)} (${escapeHtml(m.especialidade)})</option>`).join('');
 
-        selectPac.innerHTML = '<option value="">-- Escolha um Paciente --</option>' + 
-          pacientesCache.map(p => `<option value="${p.id}">${p.nome} - CPF: ${p.cpf}</option>`).join('');
+        selectPac.innerHTML = '<option value="">-- Escolha um Paciente --</option>' +
+          pacientesCache.map(p => `<option value="${escapeHtml(p.id)}">${escapeHtml(p.nome)} - CPF: ${escapeHtml(p.cpf)}</option>`).join('');
 
         carregarHorariosDisponiveis();
+        carregarListasCadastros();
       } catch (err) {
         console.error('Erro ao carregar médicos/pacientes:', err);
       }
     }
 
-    // Carregar Horários Disponíveis
+    // Horários Disponíveis
     async function carregarHorariosDisponiveis() {
       const medicoId = document.getElementById('select-medico').value;
       const data = document.getElementById('input-data').value;
@@ -533,13 +792,16 @@ Carregando logs do sistema...
 
       selectHorario.innerHTML = '<option value="">Consultando disponibilidade...</option>';
       try {
-        const res = await fetch(`/api/medicos/${medicoId}/horarios?data=${data}`);
+        const res = await fetch(`/api/medicos/${encodeURIComponent(medicoId)}/horarios?data=${encodeURIComponent(data)}`);
+        if (!res.ok) {
+          selectHorario.innerHTML = '<option value="">Erro ao carregar horários</option>';
+          return;
+        }
         const horarios = await res.json();
-
         if (horarios.length === 0) {
           selectHorario.innerHTML = '<option value="">Sem horários disponíveis nesta data</option>';
         } else {
-          selectHorario.innerHTML = horarios.map(h => `<option value="${h}">${h}</option>`).join('');
+          selectHorario.innerHTML = horarios.map(h => `<option value="${escapeHtml(h)}">${escapeHtml(h)}</option>`).join('');
         }
       } catch (err) {
         selectHorario.innerHTML = '<option value="">Erro ao carregar horários</option>';
@@ -585,7 +847,7 @@ Carregando logs do sistema...
 
         if (res.ok) {
           msgDiv.className = 'mt-4 p-3 rounded-lg text-sm bg-emerald-950/80 border border-emerald-700 text-emerald-300';
-          msgDiv.innerHTML = `<i class="fa-solid fa-check-circle mr-1"></i> Consulta agendada com sucesso com ${medico.nome} em ${data} às ${horario}!`;
+          msgDiv.innerHTML = `<i class="fa-solid fa-check-circle mr-1"></i> Consulta agendada com sucesso com ${escapeHtml(medico.nome)} em ${escapeHtml(data)} às ${escapeHtml(horario)}!`;
           msgDiv.classList.remove('hidden');
           document.getElementById('input-obs').value = '';
           carregarConsultas();
@@ -594,7 +856,7 @@ Carregando logs do sistema...
         } else {
           const erro = await res.json();
           msgDiv.className = 'mt-4 p-3 rounded-lg text-sm bg-rose-950/80 border border-rose-700 text-rose-300';
-          msgDiv.innerHTML = `<i class="fa-solid fa-triangle-exclamation mr-1"></i> ${erro.detail || 'Erro ao agendar consulta.'}`;
+          msgDiv.innerHTML = `<i class="fa-solid fa-triangle-exclamation mr-1"></i> ${escapeHtml(erro.detail || 'Erro ao agendar consulta.')}`;
           msgDiv.classList.remove('hidden');
         }
       } catch (err) {
@@ -608,15 +870,15 @@ Carregando logs do sistema...
     async function carregarConsultas() {
       try {
         const res = await fetch('/api/consultas');
-        const consultas = await res.json();
+        consultasCacheList = await res.json();
         const tbody = document.getElementById('tabela-consultas');
 
-        if (consultas.length === 0) {
+        if (consultasCacheList.length === 0) {
           tbody.innerHTML = '<tr><td colspan="6" class="text-center py-6 text-slate-500">Nenhuma consulta cadastrada.</td></tr>';
           return;
         }
 
-        tbody.innerHTML = consultas.map(c => {
+        tbody.innerHTML = consultasCacheList.map(c => {
           let statusBadge = '<span class="bg-blue-900/60 text-blue-300 border border-blue-700 px-2 py-0.5 rounded text-xs">Agendada</span>';
           if (c.status === 'Cancelada') {
             statusBadge = '<span class="bg-rose-900/60 text-rose-300 border border-rose-700 px-2 py-0.5 rounded text-xs">Cancelada</span>';
@@ -624,18 +886,22 @@ Carregando logs do sistema...
             statusBadge = '<span class="bg-emerald-900/60 text-emerald-300 border border-emerald-700 px-2 py-0.5 rounded text-xs">Concluída</span>';
           }
 
-          const cancelBtn = c.status === 'Agendada' 
-            ? `<button onclick="cancelarConsulta('${c.id}')" class="text-xs bg-rose-900/40 hover:bg-rose-800 text-rose-300 py-1 px-2 rounded border border-rose-700/50">Cancelar</button>`
-            : `<span class="text-slate-600 text-xs">-</span>`;
+          const acoes = [];
+          if (c.status === 'Agendada') {
+            acoes.push(`<button onclick="abrirEditarConsulta('${escapeHtml(c.id)}')" class="text-xs bg-blue-900/40 hover:bg-blue-800 text-blue-300 py-1 px-2 rounded border border-blue-700/50" title="Editar / Remarcar"><i class="fa-solid fa-pen"></i></button>`);
+            acoes.push(`<button onclick="concluirConsulta('${escapeHtml(c.id)}')" class="text-xs bg-emerald-900/40 hover:bg-emerald-800 text-emerald-300 py-1 px-2 rounded border border-emerald-700/50" title="Concluir">Concluir</button>`);
+            acoes.push(`<button onclick="cancelarConsulta('${escapeHtml(c.id)}')" class="text-xs bg-amber-900/40 hover:bg-amber-800 text-amber-300 py-1 px-2 rounded border border-amber-700/50" title="Cancelar">Cancelar</button>`);
+          }
+          acoes.push(`<button onclick="excluirConsulta('${escapeHtml(c.id)}')" class="text-xs bg-rose-900/40 hover:bg-rose-800 text-rose-300 py-1 px-2 rounded border border-rose-700/50" title="Excluir registro"><i class="fa-solid fa-trash"></i></button>`);
 
           return `
             <tr class="hover:bg-slate-700/30 transition">
-              <td class="py-3 px-4 font-mono text-xs text-slate-400">${c.id}</td>
-              <td class="py-3 px-4 font-medium text-slate-200">${c.data} <span class="text-blue-400 font-bold ml-1">${c.horario}</span></td>
-              <td class="py-3 px-4 text-slate-300">${c.paciente_nome}</td>
-              <td class="py-3 px-4 text-slate-300">${c.medico_nome}</td>
+              <td class="py-3 px-4 font-mono text-xs text-slate-400">${escapeHtml(c.id)}</td>
+              <td class="py-3 px-4 font-medium text-slate-200">${escapeHtml(c.data)} <span class="text-blue-400 font-bold ml-1">${escapeHtml(c.horario)}</span></td>
+              <td class="py-3 px-4 text-slate-300">${escapeHtml(c.paciente_nome)}</td>
+              <td class="py-3 px-4 text-slate-300">${escapeHtml(c.medico_nome)}</td>
               <td class="py-3 px-4">${statusBadge}</td>
-              <td class="py-3 px-4 text-center">${cancelBtn}</td>
+              <td class="py-3 px-4 text-center"><div class="flex justify-center gap-1.5 flex-wrap">${acoes.join('')}</div></td>
             </tr>
           `;
         }).join('');
@@ -644,11 +910,74 @@ Carregando logs do sistema...
       }
     }
 
-    // Cancelar Consulta
+    async function abrirEditarConsulta(id) {
+      const c = consultasCacheList.find(item => item.id === id);
+      if (!c) return;
+      document.getElementById('edit-con-id').value = c.id;
+      document.getElementById('edit-con-medico-id').value = c.medico_id;
+      document.getElementById('edit-con-resumo').innerText = `${c.paciente_nome} com ${c.medico_nome}`;
+      document.getElementById('edit-con-data').value = c.data;
+      document.getElementById('edit-con-obs').value = c.observacoes || '';
+      await carregarHorariosEdicaoConsulta(c.horario);
+      document.getElementById('modal-consulta').classList.remove('hidden');
+    }
+
+    async function carregarHorariosEdicaoConsulta(horarioAtual) {
+      const medicoId = document.getElementById('edit-con-medico-id').value;
+      const data = document.getElementById('edit-con-data').value;
+      const sel = document.getElementById('edit-con-horario');
+      const res = await fetch(`/api/medicos/${encodeURIComponent(medicoId)}/horarios?data=${encodeURIComponent(data)}`);
+      let horarios = res.ok ? await res.json() : [];
+      if (horarioAtual && !horarios.includes(horarioAtual)) {
+        horarios = [horarioAtual, ...horarios].sort();
+      }
+      sel.innerHTML = horarios.map(h => `<option value="${escapeHtml(h)}" ${h === horarioAtual ? 'selected' : ''}>${escapeHtml(h)}</option>`).join('');
+    }
+
+    async function salvarEdicaoConsulta(e) {
+      e.preventDefault();
+      const id = document.getElementById('edit-con-id').value;
+      const payload = {
+        data: document.getElementById('edit-con-data').value,
+        horario: document.getElementById('edit-con-horario').value,
+        observacoes: document.getElementById('edit-con-obs').value,
+      };
+      const res = await fetch(`/api/consultas/${encodeURIComponent(id)}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (res.ok) {
+        fecharModal('modal-consulta');
+        carregarConsultas();
+        carregarHorariosDisponiveis();
+        atualizarTelemetria();
+      } else {
+        const err = await res.json();
+        alert('Erro ao atualizar consulta: ' + (err.detail || 'Falha'));
+      }
+    }
+
+    async function concluirConsulta(id) {
+      try {
+        const res = await fetch(`/api/consultas/${encodeURIComponent(id)}/concluir`, { method: 'PUT' });
+        if (res.ok) {
+          carregarConsultas();
+          carregarHorariosDisponiveis();
+          atualizarTelemetria();
+        } else {
+          const err = await res.json();
+          alert(err.detail || 'Erro ao concluir consulta.');
+        }
+      } catch (err) {
+        alert('Erro de conexão: ' + err.message);
+      }
+    }
+
     async function cancelarConsulta(id) {
       if (!confirm('Deseja cancelar esta consulta?')) return;
       try {
-        const res = await fetch(`/api/consultas/${id}/cancelar`, { method: 'PUT' });
+        const res = await fetch(`/api/consultas/${encodeURIComponent(id)}/cancelar`, { method: 'PUT' });
         if (res.ok) {
           carregarConsultas();
           carregarHorariosDisponiveis();
@@ -661,7 +990,33 @@ Carregando logs do sistema...
       }
     }
 
-    // Cadastros
+    async function excluirConsulta(id) {
+      if (!confirm('Deseja excluir permanentemente este registro de consulta?')) return;
+      try {
+        const res = await fetch(`/api/consultas/${encodeURIComponent(id)}`, { method: 'DELETE' });
+        if (res.ok) {
+          carregarConsultas();
+          carregarHorariosDisponiveis();
+          atualizarTelemetria();
+        } else {
+          const err = await res.json();
+          alert(err.detail || 'Erro ao excluir consulta.');
+        }
+      } catch (err) {
+        alert('Erro de conexão: ' + err.message);
+      }
+    }
+
+    // Cadastros Médicos e Pacientes
+    function mostrarMsgCadastro(ok, texto) {
+      const box = document.getElementById('msg-cadastros');
+      box.className = ok
+        ? 'p-3 rounded-lg text-sm bg-emerald-950/80 border border-emerald-700 text-emerald-300'
+        : 'p-3 rounded-lg text-sm bg-rose-950/80 border border-rose-700 text-rose-300';
+      box.innerText = texto;
+      box.classList.remove('hidden');
+    }
+
     async function handleCadastrarMedico(e) {
       e.preventDefault();
       const payload = {
@@ -676,18 +1031,17 @@ Carregando logs do sistema...
           body: JSON.stringify(payload)
         });
         if (res.ok) {
-          alert('Médico cadastrado com sucesso!');
+          mostrarMsgCadastro(true, 'Médico cadastrado com sucesso!');
           document.getElementById('med-nome').value = '';
           document.getElementById('med-crm').value = '';
           document.getElementById('med-especialidade').value = '';
-          carregarMedicosEPacientes();
-          carregarListasCadastros();
+          await carregarMedicosEPacientes();
         } else {
           const err = await res.json();
-          alert('Erro: ' + (err.detail || 'Não foi possível cadastrar médico.'));
+          mostrarMsgCadastro(false, err.detail || 'Não foi possível cadastrar médico.');
         }
       } catch (err) {
-        alert('Erro: ' + err.message);
+        mostrarMsgCadastro(false, 'Erro: ' + err.message);
       }
     }
 
@@ -696,7 +1050,8 @@ Carregando logs do sistema...
       const payload = {
         nome: document.getElementById('pac-nome').value,
         cpf: document.getElementById('pac-cpf').value,
-        telefone: document.getElementById('pac-telefone').value
+        telefone: document.getElementById('pac-telefone').value,
+        email: document.getElementById('pac-email').value
       };
       try {
         const res = await fetch('/api/pacientes', {
@@ -705,18 +1060,18 @@ Carregando logs do sistema...
           body: JSON.stringify(payload)
         });
         if (res.ok) {
-          alert('Paciente cadastrado com sucesso!');
+          mostrarMsgCadastro(true, 'Paciente cadastrado com sucesso!');
           document.getElementById('pac-nome').value = '';
           document.getElementById('pac-cpf').value = '';
           document.getElementById('pac-telefone').value = '';
-          carregarMedicosEPacientes();
-          carregarListasCadastros();
+          document.getElementById('pac-email').value = '';
+          await carregarMedicosEPacientes();
         } else {
           const err = await res.json();
-          alert('Erro: ' + (err.detail || 'Não foi possível cadastrar paciente.'));
+          mostrarMsgCadastro(false, err.detail || 'Não foi possível cadastrar paciente.');
         }
       } catch (err) {
-        alert('Erro: ' + err.message);
+        mostrarMsgCadastro(false, 'Erro: ' + err.message);
       }
     }
 
@@ -725,35 +1080,254 @@ Carregando logs do sistema...
       const divPac = document.getElementById('lista-pacientes');
 
       divMed.innerHTML = medicosCache.map(m => `
-        <div class="bg-slate-900 p-2.5 rounded-lg border border-slate-700 flex justify-between items-center text-xs">
+        <div class="bg-slate-900 p-2.5 rounded-lg border border-slate-700 flex justify-between items-center text-xs gap-2">
           <div>
-            <div class="font-bold text-slate-200">${m.nome}</div>
-            <div class="text-slate-400">CRM: ${m.crm} &bull; ${m.especialidade}</div>
+            <div class="font-bold text-slate-200">${escapeHtml(m.nome)}</div>
+            <div class="text-slate-400">CRM: ${escapeHtml(m.crm)} &bull; ${escapeHtml(m.especialidade)}</div>
+            <div class="text-[10px] text-slate-500 mt-0.5">Horários: ${(m.horarios_disponiveis || []).join(', ')}</div>
           </div>
-          <span class="text-emerald-400 font-mono text-[11px]">${m.id}</span>
+          <div class="flex items-center space-x-1.5 shrink-0">
+            <button onclick="abrirModalHorarios('${escapeHtml(m.id)}')" class="bg-amber-900/40 hover:bg-amber-800 text-amber-300 px-2 py-1 rounded border border-amber-700/50" title="Gerenciar Horários"><i class="fa-solid fa-clock"></i></button>
+            <button onclick="abrirEditarMedico('${escapeHtml(m.id)}')" class="bg-blue-900/40 hover:bg-blue-800 text-blue-300 px-2 py-1 rounded border border-blue-700/50" title="Editar Médico"><i class="fa-solid fa-pen"></i></button>
+            <button onclick="excluirMedico('${escapeHtml(m.id)}')" class="bg-rose-900/40 hover:bg-rose-800 text-rose-300 px-2 py-1 rounded border border-rose-700/50" title="Excluir Médico"><i class="fa-solid fa-trash"></i></button>
+          </div>
         </div>
       `).join('');
 
       divPac.innerHTML = pacientesCache.map(p => `
-        <div class="bg-slate-900 p-2.5 rounded-lg border border-slate-700 flex justify-between items-center text-xs">
+        <div class="bg-slate-900 p-2.5 rounded-lg border border-slate-700 flex justify-between items-center text-xs gap-2">
           <div>
-            <div class="font-bold text-slate-200">${p.nome}</div>
-            <div class="text-slate-400">CPF: ${p.cpf} &bull; Tel: ${p.telefone}</div>
+            <div class="font-bold text-slate-200">${escapeHtml(p.nome)}</div>
+            <div class="text-slate-400">CPF: ${escapeHtml(p.cpf)} &bull; Tel: ${escapeHtml(p.telefone)}</div>
           </div>
-          <span class="text-blue-400 font-mono text-[11px]">${p.id}</span>
+          <div class="flex items-center space-x-1.5 shrink-0">
+            <button onclick="abrirEditarPaciente('${escapeHtml(p.id)}')" class="bg-blue-900/40 hover:bg-blue-800 text-blue-300 px-2 py-1 rounded border border-blue-700/50" title="Editar Paciente"><i class="fa-solid fa-pen"></i></button>
+            <button onclick="excluirPaciente('${escapeHtml(p.id)}')" class="bg-rose-900/40 hover:bg-rose-800 text-rose-300 px-2 py-1 rounded border border-rose-700/50" title="Excluir Paciente"><i class="fa-solid fa-trash"></i></button>
+          </div>
         </div>
       `).join('');
     }
 
-    // Relatórios e Backups
+    function abrirEditarMedico(id) {
+      const m = medicosCache.find(x => x.id === id);
+      if (!m) return;
+      document.getElementById('edit-med-id').value = m.id;
+      document.getElementById('edit-med-nome').value = m.nome;
+      document.getElementById('edit-med-crm').value = m.crm;
+      document.getElementById('edit-med-esp').value = m.especialidade;
+      document.getElementById('modal-medico').classList.remove('hidden');
+    }
+
+    async function salvarEdicaoMedico(e) {
+      e.preventDefault();
+      const id = document.getElementById('edit-med-id').value;
+      const payload = {
+        nome: document.getElementById('edit-med-nome').value,
+        crm: document.getElementById('edit-med-crm').value,
+        especialidade: document.getElementById('edit-med-esp').value,
+      };
+      const res = await fetch(`/api/medicos/${encodeURIComponent(id)}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (res.ok) {
+        fecharModal('modal-medico');
+        mostrarMsgCadastro(true, 'Médico atualizado com sucesso (referências propagadas nas consultas).');
+        await carregarMedicosEPacientes();
+        await carregarConsultas();
+      } else {
+        const err = await res.json();
+        alert(err.detail || 'Erro ao editar médico.');
+      }
+    }
+
+    async function excluirMedico(id) {
+      if (!confirm('Deseja excluir este médico?')) return;
+      const res = await fetch(`/api/medicos/${encodeURIComponent(id)}`, { method: 'DELETE' });
+      if (res.ok) {
+        mostrarMsgCadastro(true, 'Médico excluído com sucesso.');
+        await carregarMedicosEPacientes();
+      } else {
+        const err = await res.json();
+        mostrarMsgCadastro(false, err.detail || 'Erro ao excluir médico.');
+      }
+    }
+
+    function abrirEditarPaciente(id) {
+      const p = pacientesCache.find(x => x.id === id);
+      if (!p) return;
+      document.getElementById('edit-pac-id').value = p.id;
+      document.getElementById('edit-pac-nome').value = p.nome;
+      document.getElementById('edit-pac-cpf').value = p.cpf;
+      document.getElementById('edit-pac-telefone').value = p.telefone;
+      document.getElementById('edit-pac-email').value = p.email || '';
+      document.getElementById('modal-paciente').classList.remove('hidden');
+    }
+
+    async function salvarEdicaoPaciente(e) {
+      e.preventDefault();
+      const id = document.getElementById('edit-pac-id').value;
+      const payload = {
+        nome: document.getElementById('edit-pac-nome').value,
+        cpf: document.getElementById('edit-pac-cpf').value,
+        telefone: document.getElementById('edit-pac-telefone').value,
+        email: document.getElementById('edit-pac-email').value,
+      };
+      const res = await fetch(`/api/pacientes/${encodeURIComponent(id)}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (res.ok) {
+        fecharModal('modal-paciente');
+        mostrarMsgCadastro(true, 'Paciente atualizado com sucesso (referências propagadas nas consultas).');
+        await carregarMedicosEPacientes();
+        await carregarConsultas();
+      } else {
+        const err = await res.json();
+        alert(err.detail || 'Erro ao editar paciente.');
+      }
+    }
+
+    async function excluirPaciente(id) {
+      if (!confirm('Deseja excluir este paciente?')) return;
+      const res = await fetch(`/api/pacientes/${encodeURIComponent(id)}`, { method: 'DELETE' });
+      if (res.ok) {
+        mostrarMsgCadastro(true, 'Paciente excluído com sucesso.');
+        await carregarMedicosEPacientes();
+      } else {
+        const err = await res.json();
+        mostrarMsgCadastro(false, err.detail || 'Erro ao excluir paciente.');
+      }
+    }
+
+    // Gestão de Horários do Médico
+    function renderHorariosModal(horarios) {
+      const container = document.getElementById('horarios-chips');
+      document.getElementById('substituir-horarios-input').value = horarios.join(', ');
+      if (!horarios.length) {
+        container.innerHTML = '<span class="text-xs text-slate-500">Nenhum horário cadastrado.</span>';
+        return;
+      }
+      container.innerHTML = horarios.map(h => `
+        <span class="bg-slate-900 border border-slate-700 px-2.5 py-1 rounded-full text-xs font-mono text-emerald-300 flex items-center space-x-2">
+          <span>${escapeHtml(h)}</span>
+          <button type="button" onclick="removerHorarioMedico('${escapeHtml(h)}')" class="text-rose-400 hover:text-rose-300 font-bold">&times;</button>
+        </span>
+      `).join('');
+    }
+
+    async function abrirModalHorarios(medicoId) {
+      const m = medicosCache.find(x => x.id === medicoId);
+      document.getElementById('hor-med-id').value = medicoId;
+      document.getElementById('modal-horarios-titulo').innerText = `Horários - ${m ? m.nome : medicoId}`;
+      const res = await fetch(`/api/medicos/${encodeURIComponent(medicoId)}/horarios`);
+      const horarios = res.ok ? await res.json() : [];
+      renderHorariosModal(horarios);
+      document.getElementById('modal-horarios').classList.remove('hidden');
+    }
+
+    async function adicionarHorarioMedico(e) {
+      e.preventDefault();
+      const medicoId = document.getElementById('hor-med-id').value;
+      const horario = document.getElementById('novo-horario-input').value.trim();
+      const res = await fetch(`/api/medicos/${encodeURIComponent(medicoId)}/horarios`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ horario })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        document.getElementById('novo-horario-input').value = '';
+        renderHorariosModal(data.horarios_disponiveis);
+        await carregarMedicosEPacientes();
+      } else {
+        const err = await res.json();
+        alert(err.detail || 'Erro ao adicionar horário.');
+      }
+    }
+
+    async function removerHorarioMedico(horario) {
+      const medicoId = document.getElementById('hor-med-id').value;
+      const res = await fetch(`/api/medicos/${encodeURIComponent(medicoId)}/horarios/${encodeURIComponent(horario)}`, {
+        method: 'DELETE'
+      });
+      if (res.ok) {
+        const data = await res.json();
+        renderHorariosModal(data.horarios_disponiveis);
+        await carregarMedicosEPacientes();
+      } else {
+        const err = await res.json();
+        alert(err.detail || 'Erro ao remover horário.');
+      }
+    }
+
+    async function substituirHorariosMedico() {
+      const medicoId = document.getElementById('hor-med-id').value;
+      const raw = document.getElementById('substituir-horarios-input').value;
+      const horarios = raw.split(',').map(s => s.trim()).filter(Boolean);
+      const res = await fetch(`/api/medicos/${encodeURIComponent(medicoId)}/horarios`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ horarios })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        renderHorariosModal(data.horarios_disponiveis);
+        await carregarMedicosEPacientes();
+      } else {
+        const err = await res.json();
+        alert(err.detail || 'Erro ao substituir horários.');
+      }
+    }
+
+    // Jobs Assíncronos no WorkerPool (Relatórios e Backups)
+    async function acompanharJob(jobId, titulo) {
+      const banner = document.getElementById('job-status-banner');
+      const spinner = document.getElementById('job-spinner');
+      const titleEl = document.getElementById('job-title');
+      const metaEl = document.getElementById('job-meta');
+      const actionEl = document.getElementById('job-action');
+
+      banner.classList.remove('hidden');
+      spinner.className = 'fa-solid fa-circle-notch fa-spin text-blue-400';
+      titleEl.innerText = `${titulo} (Job #${jobId})`;
+      metaEl.innerText = 'Status: pendente...';
+      actionEl.innerHTML = '';
+
+      for (let i = 0; i < 60; i++) {
+        const res = await fetch(`/api/jobs/${encodeURIComponent(jobId)}`);
+        if (!res.ok) break;
+        const job = await res.json();
+        metaEl.innerText = `Status: ${job.status} | Thread: ${job.thread_name || '-'} (TID: ${job.tid || '-'})`;
+
+        if (job.status === 'concluído') {
+          spinner.className = 'fa-solid fa-check-circle text-emerald-400';
+          if (job.result && job.result.download_url) {
+            actionEl.innerHTML = `<a href="${escapeHtml(job.result.download_url)}" target="_blank" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded text-xs font-semibold flex items-center space-x-1"><i class="fa-solid fa-download"></i><span>Baixar ${escapeHtml(job.result.filename)}</span></a>`;
+          } else if (job.result && job.result.file) {
+            actionEl.innerHTML = `<span class="text-xs font-mono text-purple-300">${escapeHtml(job.result.file)}</span>`;
+          }
+          carregarRelatoriosEBackups();
+          atualizarTelemetria();
+          return;
+        }
+        if (job.status === 'erro') {
+          spinner.className = 'fa-solid fa-triangle-exclamation text-rose-400';
+          metaEl.innerText = `Erro: ${job.error || 'Falha desconhecida'}`;
+          return;
+        }
+        await new Promise(r => setTimeout(r, 250));
+      }
+    }
+
     async function gerarRelatorio(tipo) {
       try {
         const res = await fetch(`/api/reports/${tipo}`, { method: 'POST' });
         if (res.ok) {
           const data = await res.json();
-          alert(`Relatório ${tipo.toUpperCase()} gerado com sucesso! Arquivo: ${data.filename}`);
-          carregarRelatoriosEBackups();
-          atualizarTelemetria();
+          await acompanharJob(data.job_id, `Relatório ${tipo.toUpperCase()}`);
         }
       } catch (err) {
         alert('Erro ao gerar relatório: ' + err.message);
@@ -765,9 +1339,7 @@ Carregando logs do sistema...
         const res = await fetch('/api/backups/create', { method: 'POST' });
         if (res.ok) {
           const data = await res.json();
-          alert('Snapshot de backup gerado com sucesso: ' + data.file);
-          carregarRelatoriosEBackups();
-          atualizarTelemetria();
+          await acompanharJob(data.job_id, 'Backup Manual (.ZIP)');
         }
       } catch (err) {
         alert('Erro ao criar backup: ' + err.message);
@@ -790,11 +1362,11 @@ Carregando logs do sistema...
               <div>
                 <div class="font-medium text-slate-200 flex items-center space-x-1.5">
                   <i class="fa-solid fa-file-${r.type.toLowerCase()} ${r.type === 'PDF' ? 'text-rose-400' : 'text-emerald-400'}"></i>
-                  <span>${r.filename}</span>
+                  <span>${escapeHtml(r.filename)}</span>
                 </div>
-                <div class="text-[11px] text-slate-400">${r.created_at} &bull; ${r.size_kb} KB</div>
+                <div class="text-[11px] text-slate-400">${escapeHtml(r.created_at)} &bull; ${r.size_kb} KB</div>
               </div>
-              <a href="${r.download_url}" target="_blank" class="bg-slate-700 hover:bg-slate-600 text-slate-200 py-1 px-2.5 rounded text-xs flex items-center space-x-1 border border-slate-600">
+              <a href="${escapeHtml(r.download_url)}" target="_blank" class="bg-slate-700 hover:bg-slate-600 text-slate-200 py-1 px-2.5 rounded text-xs flex items-center space-x-1 border border-slate-600">
                 <i class="fa-solid fa-download"></i> <span>Baixar</span>
               </a>
             </div>
@@ -807,9 +1379,9 @@ Carregando logs do sistema...
               <div>
                 <div class="font-medium text-slate-200 flex items-center space-x-1.5">
                   <i class="fa-solid fa-file-zipper text-purple-400"></i>
-                  <span>${b.filename}</span>
+                  <span>${escapeHtml(b.filename)}</span>
                 </div>
-                <div class="text-[11px] text-slate-400">${b.created_at} &bull; ${b.size_kb} KB</div>
+                <div class="text-[11px] text-slate-400">${escapeHtml(b.created_at)} &bull; ${b.size_kb} KB</div>
               </div>
               <span class="text-purple-300 font-mono text-xs">${b.size_kb} KB</span>
             </div>
@@ -819,7 +1391,7 @@ Carregando logs do sistema...
       }
     }
 
-    // Executar Teste de Concorrência
+    // Concorrência: Threads
     async function executarTesteConcorrencia() {
       const btn = document.getElementById('btn-teste-concorrencia');
       const box = document.getElementById('resultado-concorrencia');
@@ -836,10 +1408,10 @@ Carregando logs do sistema...
         const res = await fetch('/api/test/concurrency-simulation', { method: 'POST' });
         const data = await res.json();
 
-        resStatus.innerText = `1 Sucesso / ${data.conflitos_prevenidos} Rejeições pelo Lock`;
+        resStatus.innerText = `${data.agendamentos_efetuados} Sucesso / ${data.conflitos_prevenidos} Rejeições`;
         resDetalhes.innerHTML = data.detalhes.map(d => `
           <div class="${d.sucesso ? 'text-emerald-400 font-bold' : 'text-slate-400'}">
-            Thread #${d.thread}: ${d.mensagem}
+            Thread #${d.thread}: ${escapeHtml(d.mensagem)}
           </div>
         `).join('');
 
@@ -855,7 +1427,43 @@ Carregando logs do sistema...
       }
     }
 
-    // Forçar Garbage Collection
+    // Concorrência: Processos (Multiprocessing)
+    async function executarTesteMultiprocesso() {
+      const btn = document.getElementById('btn-teste-multiprocesso');
+      const box = document.getElementById('resultado-multiprocesso');
+      const resStatus = document.getElementById('res-mp-status');
+      const resDetalhes = document.getElementById('res-mp-detalhes');
+
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin mr-2"></i> Criando Processos (spawn)...';
+      box.classList.remove('hidden');
+      resStatus.innerText = 'Executando...';
+      resDetalhes.innerHTML = '';
+
+      try {
+        const res = await fetch('/api/test/multiprocess-simulation?num_processes=5', { method: 'POST' });
+        const data = await res.json();
+
+        resStatus.innerText = `${data.agendamentos_efetuados} Sucesso / ${data.conflitos_prevenidos} Bloqueios`;
+        resDetalhes.innerHTML = data.detalhes.map(d => `
+          <div class="${d.sucesso ? 'text-emerald-400 font-bold' : 'text-slate-400'}">
+            Proc #${d.processo} [PID:${d.pid}]: ${escapeHtml(d.mensagem)}
+          </div>
+        `).join('');
+
+        carregarConsultas();
+        atualizarTelemetria();
+        carregarLogsSO();
+      } catch (err) {
+        resStatus.innerText = 'Erro na simulação';
+        resDetalhes.innerText = err.message;
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-microchip mr-2"></i> Disparar 5 Processos Independentes';
+      }
+    }
+
+    // Garbage Collection
     async function forcarGarbageCollection() {
       const feedback = document.getElementById('feedback-gc');
       const msg = document.getElementById('gc-mensagem');
@@ -867,7 +1475,7 @@ Carregando logs do sistema...
 
         feedback.classList.remove('hidden');
         msg.innerHTML = `<i class="fa-solid fa-check-circle mr-1"></i> Coleta de lixo concluída com sucesso!`;
-        det.innerText = `Objetos liberados: ${data.unreachable_objects_collected} | Entradas de cache purgadas: ${data.cache_entries_purged} | Arquivos temporários removidos: ${data.temp_files_deleted} | RAM atual: ${data.current_rss_mb} MB`;
+        det.innerText = `Objetos liberados: ${data.unreachable_objects_collected} | Cache purgado: ${data.cache_entries_purged} | .tmp removidos: ${data.temp_files_deleted} | .lock removidos: ${data.lock_files_deleted || 0} | RAM: ${data.current_rss_mb} MB`;
 
         atualizarTelemetria();
         carregarLogsSO();
@@ -875,7 +1483,42 @@ Carregando logs do sistema...
         alert('Erro ao disparar GC: ' + err.message);
       }
     }
+
+    // Tracemalloc
+    async function capturarSnapshotMemoria() {
+      const box = document.getElementById('resultado-tracemalloc');
+      box.classList.remove('hidden');
+      box.innerText = 'Capturando snapshot tracemalloc...';
+      try {
+        const res = await fetch('/api/os/memory/snapshot');
+        const data = await res.json();
+        const rows = data.top_allocations.map((a, idx) =>
+          `<div>${idx + 1}. ${escapeHtml(a.file.split(/[/\\]/).slice(-2).join('/'))}:${a.line} -> <span class="text-purple-300">${a.size_kb} KB</span> (${a.count} blocos)</div>`
+        ).join('');
+        box.innerHTML = `<div class="text-emerald-400 font-bold mb-1">Atual: ${data.traced_current_kb} KB | Pico: ${data.traced_peak_kb} KB</div>${rows}`;
+        atualizarTelemetria();
+      } catch (err) {
+        box.innerText = 'Erro: ' + err.message;
+      }
+    }
+
+    async function compararSnapshotsMemoria() {
+      const box = document.getElementById('resultado-tracemalloc');
+      box.classList.remove('hidden');
+      box.innerText = 'Comparando snapshots...';
+      try {
+        const res = await fetch('/api/os/memory/compare', { method: 'POST' });
+        const data = await res.json();
+        const headerColor = data.leak_suspected ? 'text-rose-400' : 'text-emerald-400';
+        const rows = (data.diffs || []).map((d, idx) =>
+          `<div>${idx + 1}. ${escapeHtml(d.file.split(/[/\\]/).slice(-2).join('/'))}:${d.line} -> Δ ${d.size_diff_kb >= 0 ? '+' : ''}${d.size_diff_kb} KB (Δ ${d.count_diff} blocos)</div>`
+        ).join('');
+        box.innerHTML = `<div class="${headerColor} font-bold mb-1">${escapeHtml(data.message)} (Δ Total: ${data.total_diff_kb} KB)</div>${rows}`;
+        atualizarTelemetria();
+      } catch (err) {
+        box.innerText = 'Erro: ' + err.message;
+      }
+    }
   </script>
 </body>
 </html>
-

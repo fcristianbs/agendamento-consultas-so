@@ -2,11 +2,14 @@
 """
 Módulo de Geração de Relatórios (PDF e CSV)
 Demonstração de Conceitos de SO:
-- Operações de I/O em disco com gravação de arquivos binários e tabulares
-- Execução desacoplada via workers assíncronos
+- Operações de I/O em disco com gravação atômica de arquivos binários e tabulares
+- Encoding e terminadores de linha dependentes de SO (utf-8-sig / \\r\\n no Windows; utf-8 / \\n no POSIX)
+- Execução desacoplada em threads do WorkerPool com registro de TID
 """
 
 import os
+import logging
+import threading
 from datetime import datetime
 from pathlib import Path
 from typing import List, Dict, Any
@@ -14,16 +17,24 @@ from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+
+from src.config.os_adapter import os_adapter
 from src.storage.storage import FileManager
+
+_rep_logger = logging.getLogger("sistema_agendamento")
+
 
 def generate_pdf(consultas: List[Dict[str, Any]], output_dir: Path, os_name: str) -> str:
     """Gera um relatório profissional em PDF contendo as consultas e metadados do SO."""
+    output_dir = Path(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = f"relatorio_consultas_{timestamp}.pdf"
-    file_path = output_dir / filename
+    filename = os_adapter.sanitize_filename(f"relatorio_consultas_{timestamp}.pdf")
+    file_path = os_adapter.safe_path(output_dir, filename)
+    temp_path = file_path.with_suffix(".tmp")
 
     doc = SimpleDocTemplate(
-        str(file_path),
+        str(temp_path),
         pagesize=letter,
         rightMargin=36,
         leftMargin=36,
@@ -54,8 +65,14 @@ def generate_pdf(consultas: List[Dict[str, Any]], output_dir: Path, os_name: str
         alignment=1,
         spaceAfter=14
     )
-    hora_str = datetime.now().strftime("%d/%m/%Y às %H:%M:%S")
-    story.append(Paragraph(f"Emitido em: {hora_str} | SO: {os_name} | PID: {os.getpid()}", meta_style))
+    hora_str = datetime.now().astimezone().strftime("%d/%m/%Y às %H:%M:%S %z")
+    story.append(
+        Paragraph(
+            f"Emitido em: {hora_str} | SO: {os_name} | PID: {os.getpid()} | "
+            f"Thread: {threading.current_thread().name} (TID: {threading.get_ident()})",
+            meta_style,
+        )
+    )
     story.append(Spacer(1, 8))
 
     # Tabela com as consultas
@@ -86,14 +103,35 @@ def generate_pdf(consultas: List[Dict[str, Any]], output_dir: Path, os_name: str
 
     story.append(table)
     doc.build(story)
+    os.replace(temp_path, file_path)
+    os_adapter.apply_safe_permissions(file_path)
+    _rep_logger.info(
+        f"[SO I/O] Relatório PDF gerado: {file_path.name} "
+        f"(Thread: {threading.current_thread().name}, TID: {threading.get_ident()})"
+    )
     return str(file_path)
+
 
 def export_csv(consultas: List[Dict[str, Any]], output_dir: Path, file_manager: FileManager) -> str:
-    """Exporta consultas em formato CSV."""
+    """Exporta consultas em formato CSV usando encoding e quebra de linha nativos do SO."""
+    output_dir = Path(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = f"relatorio_consultas_{timestamp}.csv"
-    file_path = output_dir / filename
-    headers = ["id", "data", "horario", "paciente_id", "paciente_nome", "medico_id", "medico_nome", "status", "observacoes", "criado_em"]
-    file_manager.save_csv(file_path, headers, consultas)
+    filename = os_adapter.sanitize_filename(f"relatorio_consultas_{timestamp}.csv")
+    file_path = os_adapter.safe_path(output_dir, filename)
+    headers = [
+        "id", "data", "horario", "paciente_id", "paciente_nome",
+        "medico_id", "medico_nome", "status", "observacoes", "criado_em"
+    ]
+    file_manager.save_csv(
+        file_path,
+        headers,
+        consultas,
+        encoding=os_adapter.csv_encoding,
+        lineterminator=os_adapter.line_ending,
+    )
+    _rep_logger.info(
+        f"[SO I/O] Relatório CSV gerado: {file_path.name} "
+        f"(Thread: {threading.current_thread().name}, TID: {threading.get_ident()})"
+    )
     return str(file_path)
-
